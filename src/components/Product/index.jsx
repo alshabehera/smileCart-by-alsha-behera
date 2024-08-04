@@ -1,21 +1,28 @@
 import { useEffect, useState } from "react";
 
 import productsApi from "apis/products";
+import Header from "components/commons/Header";
+import PageNotFound from "components/commons/PageNotFound";
 import { Typography, Spinner } from "neetoui";
 import { isNotNil, append } from "ramda";
+import { useParams } from "react-router-dom";
 
 import Carousel from "./Carousel";
 
 const Product = () => {
+  const { slug } = useParams();
   const [product, setProduct] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
 
   const fetchProduct = async () => {
     try {
-      const product = await productsApi.show();
+      const product = await productsApi.show(slug);
+      console.log(product);
       setProduct(product);
     } catch (error) {
-      console.log("An error occurred:", error);
+      console.log(error);
+      setIsError(true);
     } finally {
       setIsLoading(false);
     }
@@ -24,6 +31,8 @@ const Product = () => {
   useEffect(() => {
     fetchProduct();
   }, []);
+
+  if (isError) return <PageNotFound />;
 
   const { name, description, mrp, offerPrice, imageUrls, imageUrl } = product;
   const totalDiscounts = mrp - offerPrice;
@@ -39,12 +48,7 @@ const Product = () => {
 
   return (
     <div className="px-6 pb-6">
-      <div>
-        <Typography className="py-2 text-4xl font-semibold" style="h1">
-          {name}
-        </Typography>
-        <hr className="border-2 border-black" />
-      </div>
+      <Header title={name} />
       <div className="mt-6 flex gap-4">
         <div className="w-2/5">
           <div className="flex justify-center gap-16">
